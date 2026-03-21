@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models
-from routers import metrics
+from routers import metrics, insights
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(metrics.router)
+app.include_router(insights.router)
 
 @app.get("/")
 def root():
