@@ -12,7 +12,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://insightiq.vercel.app"
+        "https://ai-project-steel-psi.vercel.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
