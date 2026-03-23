@@ -1,8 +1,36 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from datetime import date, datetime
 from typing import Optional
 
-# ─── METRIC ───────────────────────────────────────────
+
+# ─── USER ─────────────────────────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    email:    EmailStr
+    username: str   = Field(..., min_length=2, max_length=50)
+    password: str   = Field(..., min_length=6)
+
+class UserResponse(BaseModel):
+    id:         int
+    email:      str
+    username:   str
+    is_active:  bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class LoginRequest(BaseModel):
+    email:    EmailStr
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type:   str = "bearer"
+    user:         UserResponse
+
+
+# ─── METRIC ───────────────────────────────────────────────────────────────────
 
 class MetricCreate(BaseModel):
     name:        str   = Field(..., min_length=1, max_length=100)
@@ -30,7 +58,8 @@ class MetricResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# ─── INSIGHT ──────────────────────────────────────────
+
+# ─── INSIGHT ──────────────────────────────────────────────────────────────────
 
 class InsightRequest(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)

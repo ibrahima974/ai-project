@@ -57,7 +57,7 @@
 
       <!-- Footer sidebar -->
       <div class="px-6 py-4 border-t border-gray-200">
-        <p class="text-xs text-gray-400">Propulsé par Claude AI</p>
+        <p class="text-xs text-gray-400">InsightIQ v1.0</p>
       </div>
     </aside>
 
