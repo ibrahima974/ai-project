@@ -3,22 +3,21 @@
     <div class="flex items-start justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold text-gray-900">Insights IA</h2>
-        <p class="text-gray-400 text-sm mt-0.5">Analyses générées par Claude</p>
+        <p class="text-gray-400 text-sm mt-0.5">Analyses générées</p>
       </div>
     </div>
 
     <!-- Générateur -->
     <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-      <h3 class="text-base font-semibold text-gray-900 mb-1">
-        Générer une analyse
-      </h3>
+      <h3 class="text-base font-semibold text-gray-900 mb-1">Générer une analyse</h3>
       <p class="text-sm text-gray-400 mb-4">
-        Claude va analyser tes métriques et générer un rapport actionnable.
+        IA va analyser tes métriques et générer un rapport actionnable.
       </p>
 
-      <div class="flex gap-3">
+      <div class="flex gap-3 mb-4">
         <select
           v-model="selectedCategory"
+          :disabled="store.isStreaming"
           class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
         >
           <option value="Sales">Sales</option>
@@ -28,26 +27,35 @@
 
         <button
           @click="generate"
-          :disabled="store.loading"
+          :disabled="store.isStreaming"
           class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
         >
-          <svg v-if="!store.loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div v-if="store.isStreaming" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
-          <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          {{ store.loading ? 'Analyse en cours...' : 'Analyser avec Claude' }}
+          {{ store.isStreaming ? 'Analyse en cours...' : 'Analyser avec Claude' }}
         </button>
       </div>
 
-      <!-- Erreur génération -->
-      <div v-if="store.error" class="mt-4 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
-        {{ store.error }}
+      <!-- Zone de streaming -->
+      <div
+        v-if="store.isStreaming || streamDone"
+        class="bg-gray-50 rounded-lg border border-gray-200 p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line min-h-16"
+      >
+        {{ store.streamContent }}
+        <span v-if="store.isStreaming" class="inline-block w-1.5 h-4 bg-blue-500 animate-pulse ml-0.5 align-middle"></span>
       </div>
 
       <!-- Succès -->
-      <div v-if="successMsg" class="mt-4 bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 text-sm">
+      <div v-if="successMsg" class="mt-3 bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 text-sm">
         {{ successMsg }}
+      </div>
+
+      <!-- Erreur -->
+      <div v-if="store.error" class="mt-3 bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+        {{ store.error }}
       </div>
     </div>
 
@@ -105,6 +113,7 @@ const selectedCategory = ref('Sales')
 const filterCategory   = ref('Toutes')
 const successMsg       = ref('')
 const loadingHistory   = ref(false)
+const streamDone       = ref(false)
 
 onMounted(async () => {
   loadingHistory.value = true
@@ -119,10 +128,15 @@ const filteredInsights = computed(() =>
 )
 
 async function generate() {
+  streamDone.value = false
   try {
-    await store.generateInsight(selectedCategory.value)
+    await store.streamInsight(selectedCategory.value)
+    streamDone.value = true
     successMsg.value = 'Analyse générée et sauvegardée avec succès.'
-    setTimeout(() => successMsg.value = '', 4000)
+    setTimeout(() => {
+      successMsg.value = ''
+      streamDone.value = false
+    }, 5000)
   } catch {
     // erreur déjà gérée dans le store
   }
