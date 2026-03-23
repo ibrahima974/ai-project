@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models
-from routers import metrics, insights
+from routers import metrics, insights, auth
 from seed import seed
 
 Base.metadata.create_all(bind=engine)
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+app.include_router(auth.router)
 app.include_router(metrics.router)
 app.include_router(insights.router)
 

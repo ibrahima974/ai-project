@@ -3,9 +3,10 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
-from models import Metric, Insight
+from models import Metric, Insight, User
 from schemas import InsightRequest, InsightResponse
 from services.claude_service import generate_insight, generate_insight_stream
+from services.auth_service import get_current_user
 import json
 
 router = APIRouter(prefix="/api/insights", tags=["Insights"])
@@ -13,8 +14,9 @@ router = APIRouter(prefix="/api/insights", tags=["Insights"])
 
 @router.post("/generate", response_model=InsightResponse, status_code=201)
 def generate(
-    request: InsightRequest,
-    db: Session = Depends(get_db)
+    request:      InsightRequest,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user)  
 ):
     metrics = db.query(Metric).filter(
         Metric.category == request.category
@@ -42,9 +44,9 @@ def generate(
         raise HTTPException(status_code=503, detail=str(e))
 
     db_insight = Insight(
-        title=result["title"],
-        content=result["content"],
-        category=result["category"]
+        title    = result["title"],
+        content  = result["content"],
+        category = result["category"]
     )
     db.add(db_insight)
     db.commit()
@@ -54,8 +56,9 @@ def generate(
 
 @router.post("/stream")
 def stream_insight(
-    request: InsightRequest,
-    db: Session = Depends(get_db)
+    request:      InsightRequest,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user)  
 ):
     metrics = db.query(Metric).filter(
         Metric.category == request.category
@@ -85,8 +88,8 @@ def stream_insight(
                 full_content.append(chunk)
                 yield f"data: {json.dumps({'text': chunk})}\n\n"
 
-            content  = "".join(full_content)
-            title    = f"Analyse {request.category} — {metrics_data[0]['recorded_at'][:7]}"
+            content = "".join(full_content)
+            title   = f"Analyse {request.category} — {metrics_data[0]['recorded_at'][:7]}"
 
             db_insight = Insight(
                 title    = title,
@@ -111,8 +114,9 @@ def stream_insight(
 
 @router.get("/", response_model=List[InsightResponse])
 def get_insights(
-    category: str = None,
-    db: Session = Depends(get_db)
+    category:     str     = None,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user)  
 ):
     query = db.query(Insight)
     if category:
