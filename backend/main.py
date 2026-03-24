@@ -27,14 +27,6 @@ app.include_router(metrics.router)
 app.include_router(insights.router)
 
 
-
-with engine.connect() as conn:
-    conn.execute(text("DROP TABLE IF EXISTS insights CASCADE"))
-    conn.execute(text("DROP TABLE IF EXISTS metrics CASCADE"))
-    conn.execute(text("DROP TABLE IF EXISTS users CASCADE"))
-    conn.commit()
-
-Base.metadata.create_all(bind=engine)
 seed()
 
 seed()
