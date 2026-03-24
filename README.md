@@ -51,6 +51,7 @@ The application has four core views:
 
 ## Project Structure
 
+```
 insightiq/
 ├── backend/
 │   ├── main.py                  # FastAPI app entry point
@@ -86,7 +87,7 @@ insightiq/
 │   └── package.json
 │
 └── README.md
-
+```
 
 ## Key Technical Decisions
 
