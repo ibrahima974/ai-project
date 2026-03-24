@@ -73,7 +73,7 @@
         </div>
       </div>
 
-      <p class="text-center text-xs text-gray-400 mt-6">InsightIQ — B2B Analytics Dashboard</p>
+      <p class="text-center text-xs text-gray-400 mt-6">InsightIQ - Analytics Dashboard</p>
     </div>
   </div>
 </template>
