@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Text, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Float, Date, Text, DateTime, Boolean, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -13,6 +14,9 @@ class User(Base):
     is_active  = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
 
+    metrics  = relationship("Metric",  back_populates="user", cascade="all, delete")
+    insights = relationship("Insight", back_populates="user", cascade="all, delete")
+
 
 class Metric(Base):
     __tablename__ = "metrics"
@@ -24,6 +28,9 @@ class Metric(Base):
     category    = Column(String(50), nullable=False)
     recorded_at = Column(Date, nullable=False)
     created_at  = Column(DateTime, server_default=func.now())
+    user_id     = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    user = relationship("User", back_populates="metrics")
 
 
 class Insight(Base):
@@ -34,3 +41,6 @@ class Insight(Base):
     content      = Column(Text, nullable=False)
     category     = Column(String(50), nullable=False)
     generated_at = Column(DateTime, server_default=func.now())
+    user_id      = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    user = relationship("User", back_populates="insights")

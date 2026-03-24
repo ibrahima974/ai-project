@@ -4,6 +4,7 @@ from database import get_db
 from models import User
 from schemas import UserCreate, UserResponse, LoginRequest, TokenResponse
 from services.auth_service import hash_password, verify_password, create_token, get_current_user
+from services.seed_service import seed_user_metrics
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
@@ -14,7 +15,7 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Un compte existe déjà avec cet email."
+            detail="An account already exists with this email."
         )
 
     user = User(
@@ -25,6 +26,9 @@ def register(data: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Auto-seed demo metrics for new user
+    seed_user_metrics(db, user.id)
 
     token = create_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer", "user": user}
@@ -37,13 +41,13 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     if not user or not verify_password(data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect."
+            detail="Incorrect email or password."
         )
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Compte désactivé."
+            detail="Account disabled."
         )
 
     token = create_token({"sub": user.email})
