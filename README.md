@@ -50,43 +50,48 @@ The application has four core views:
 ---
 
 ## Project Structure
-
 ```
 insightiq/
 ├── backend/
-│   ├── main.py                  # FastAPI app entry point
-│   ├── database.py              # SQLAlchemy connection and session
-│   ├── models.py                # Metric and Insight ORM models
-│   ├── schemas.py               # Pydantic validation schemas
-│   ├── seed.py                  # Initial data seeder (23 metrics)
+│   ├── main.py                      # FastAPI app entry point + CORS + router registration
+│   ├── database.py                  # SQLAlchemy engine, session and Base declaration
+│   ├── models.py                    # User, Metric, Insight ORM models with relationships
+│   ├── schemas.py                   # Pydantic validation schemas (create, update, response)
+│   ├── seed.py                      # Demo account seeder (demo@insightiq.com)
 │   ├── routers/
-│   │   ├── metrics.py           # CRUD endpoints for metrics
-│   │   └── insights.py          # Insights generation + history
+│   │   ├── auth.py                  # Register, login, /me endpoints
+│   │   ├── metrics.py               # CRUD endpoints — filtered by authenticated user
+│   │   └── insights.py              # Claude generation + SSE streaming + history
 │   ├── services/
-│   │   └── claude_service.py    # Claude API integration
-│   └── requirements.txt
+│   │   ├── auth_service.py          # JWT creation, password hashing, get_current_user
+│   │   ├── claude_service.py        # Claude API integration + prompt engineering
+│   │   └── seed_service.py          # Auto-seeds 23 demo metrics for every new user
+│   └── requirements.txt             # Python dependencies
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── views/
-│   │   │   ├── DashboardView.vue
-│   │   │   ├── MetricsView.vue
-│   │   │   └── InsightsView.vue
+│   │   │   ├── LoginView.vue        # Register + sign in with tabs, form validation
+│   │   │   ├── DashboardView.vue    # KPI cards, line/bar/pie charts, date range filter
+│   │   │   ├── MetricsView.vue      # Metrics table (desktop) + cards (mobile), CRUD
+│   │   │   └── InsightsView.vue     # Claude generator with SSE streaming + history
 │   │   ├── components/
-│   │   │   ├── AppLayout.vue    # Sidebar + global layout
-│   │   │   ├── KpiCard.vue      # KPI summary card
-│   │   │   ├── MetricModal.vue  # Create/edit modal with validation
-│   │   │   └── InsightCard.vue  # Insight display card
+│   │   │   ├── AppLayout.vue        # Collapsible sidebar + hamburger menu on mobile
+│   │   │   ├── KpiCard.vue          # KPI summary card with trend badge
+│   │   │   ├── MetricModal.vue      # Create / edit modal with full form validation
+│   │   │   └── InsightCard.vue      # Insight display card with PDF export button
 │   │   ├── stores/
-│   │   │   ├── metricsStore.js  # Pinia store for metrics
-│   │   │   └── insightsStore.js # Pinia store for insights
+│   │   │   ├── authStore.js         # Auth state — token, user, login, register, logout
+│   │   │   ├── metricsStore.js      # Metrics state — fetch, create, update, delete
+│   │   │   └── insightsStore.js     # Insights state — fetch, generate, SSE streaming
 │   │   ├── services/
-│   │   │   └── api.js           # Axios instance + API calls
+│   │   │   ├── api.js               # Axios instance + JWT interceptor + SSE stream helper
+│   │   │   └── pdfExport.js         # Client-side PDF generation with jsPDF
 │   │   └── router/
-│   │       └── index.js         # Vue Router configuration
-│   └── package.json
+│   │       └── index.js             # Vue Router config + auth guards (redirect to /login)
+│   └── package.json                 # Frontend dependencies
 │
-└── README.md
+└── README.md                        # Project documentation 
 ```
 
 ## Key Technical Decisions
