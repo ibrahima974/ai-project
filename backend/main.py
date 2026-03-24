@@ -4,7 +4,6 @@ from database import engine, Base
 import models
 from routers import metrics, insights, auth
 from seed import seed
-from sqlalchemy import text
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,7 +26,7 @@ app.include_router(metrics.router)
 app.include_router(insights.router)
 
 
-seed()
+
 
 seed()
 
